@@ -896,18 +896,6 @@ window.resetAmmattiForm = function () {
 
 
 
-/* Poistu-painike (sulje välilehti) */
-
-window.confirmExitStory = function () {
-  const ok = window.confirm("Haluatko varmasti sulkea esityksen?");
-  if (ok) {
-    window.close();
-  }
-};
-window.confirmExitStory = function () {
-  SugarCube.Engine.play('Kansi');
-};
-
 $(document).on(':passagestart', function () {
   $('.quiz-popup').remove();
 });
@@ -923,6 +911,11 @@ window.flash = function(ok, next) {
 window.poistuAmmattitutkimuksesta = function () {
   resetAmmattitutkimus();        // tyhjennä vastaukset
   Engine.play("Kansi");         // palaa kansisivulle
+};
+window.exitStorySafe = function () {
+  if (!confirm("Haluatko varmasti poistua tehtävästä?")) return;
+  if (window.resetAmmattitutkimus) resetAmmattitutkimus();
+  SugarCube.Engine.play("Kansi");
 };
 </script><tw-passagedata pid="1" name="StoryInit" tags="" position="750,0" size="100,100">&lt;&lt;set $score = 0&gt;&gt;
 
@@ -974,11 +967,12 @@ Olet tutustunut terveys- ja hyvinvointialaan ja pysähtynyt pohtimaan omaa tulev
  
   &lt;div class=&quot;intro-nappi&quot;&gt;
 
-    &lt;a class=&quot;macro-link btn--danger&quot;
+   &lt;a class=&quot;macro-link btn--danger&quot;
    href=&quot;javascript:void(0)&quot;
-   onclick=&quot;resetAmmattitutkimus(); SugarCube.Engine.play(&#39;Kansi&#39;);&quot;&gt;
+   onclick=&quot;exitStorySafe()&quot;&gt;
    Poistu
 &lt;/a&gt;
+
 
   &lt;/div&gt;
 &lt;/div&gt;
