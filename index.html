@@ -847,10 +847,10 @@ Luotu SOTE-alan ammattitehtävästä.`;
       back.textContent = "← Takaisin";
       back.onclick = ()=>Engine.backward();
 
-      const exit = document.createElement("button");
+     const exit = document.createElement("button");
       exit.className = "btn btn--danger";
       exit.textContent = "Poistu";
-      exit.onclick = ()=>window.exitStorySafe();
+      exit.onclick = () => Engine.play("Kansi");
 
       nav.append(back, exit);
       document.body.appendChild(nav);
@@ -877,6 +877,10 @@ $(document).on(':passagestart', function () {
   $('.quiz-popup').remove();
 });
 
+window.exitStorySafe = function () {
+  if (!confirm("Haluatko varmasti poistua tehtävästä?")) return;
+  Engine.play("Kansi");
+};
 
 })();
 </script><tw-tag name="cover" color="blue"></tw-tag><tw-passagedata pid="1" name="StoryInit" tags="" position="750,0" size="100,100">&lt;&lt;set $score = 0&gt;&gt;
@@ -929,11 +933,9 @@ Olet tutustunut terveys- ja hyvinvointialaan ja pysähtynyt pohtimaan omaa tulev
  
   &lt;div class=&quot;intro-nappi&quot;&gt;
 
-   &lt;a class=&quot;macro-link btn--danger&quot;
-   href=&quot;javascript:void(0)&quot;
-   onclick=&quot;exitStorySafe()&quot;&gt;
-   Poistu
-&lt;/a&gt;
+  &lt;&lt;link &quot;Poistu&quot;&gt;&gt;
+  &lt;&lt;goto &quot;Kansi&quot;&gt;&gt;
+   &lt;&lt;/link&gt;&gt;
 
 
   &lt;/div&gt;
