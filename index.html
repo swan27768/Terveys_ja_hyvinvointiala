@@ -717,25 +717,57 @@ p, h1, h2, h3 { margin-top: .3rem; margin-bottom: .3rem; }
     margin: 1rem auto 1.2rem auto;
   }
 }
-</style><script role="script" id="twine-user-script" type="text/twine-javascript">(function () {
+/* ====================================================
+   TOIMINTORIVI – SOTE-TEEMA
+   ==================================================== */
+
+.action-row {
+  display: flex;
+  justify-content: center !important;
+  gap: 1rem !important;
+  margin-top: 1.2rem;
+}
+
+/* Napit hieman leveämmiksi */
+.action-row a {
+  min-width: 220px !important;
+}
+
+/* ====================================================
+   PÄÄTOIMINTONAPPI – SOTE-TEEMA
+   ==================================================== */
+
+.btn-primary {
+  background: linear-gradient(#6fd0c7, #3fa6a0) !important; /* minttu → turkoosi */
+  border-color: #2f7f88 !important;
+  color: #083c3f !important;
+
+  box-shadow: 0 4px 0 rgba(0,0,0,0.22) !important;
+}
+
+.btn-primary:hover {
+  filter: brightness(1.08);
+}
+
+.btn-primary:active {
+  box-shadow: 0 2px 0 rgba(0,0,0,0.35) !important;
+}
+</style><script role="script" id="twine-user-script" type="text/twine-javascript">window.exitStorySafe = function () {
+  if (!confirm("Haluatko varmasti poistua tehtävästä?")) return;
+  if (window.resetAmmattitutkimus) resetAmmattitutkimus();
+  SugarCube.Engine.play("Kansi");
+};
+
+(function () {
   "use strict";
 
   $(document).on(":passagestart", function (event) {
     if (!event || !event.passage) return;
 
     const body = document.body;
-    const name = event.passage.name;
     const tags = event.passage.tags || [];
 
-    /* KANSISIVU */
-    if (tags.includes("cover")) {
-      body.classList.add("hide-navbar");
-      return;
-    }
-
-    /* MUUT SIVUT */
-    body.classList.remove("hide-navbar");
-
+    /* RAKENNA NAVBAR KERRAN */
     if (!document.querySelector(".navbar-fixed")) {
       const nav = document.createElement("div");
       nav.className = "navbar-fixed";
@@ -744,63 +776,59 @@ p, h1, h2, h3 { margin-top: .3rem; margin-bottom: .3rem; }
       back.className = "btn";
       back.textContent = "← Takaisin";
       back.onclick = () => {
-        if (State.length > 0) Engine.backward();
+        if (State && State.length > 0) SugarCube.Engine.backward();
       };
 
       const exit = document.createElement("button");
       exit.className = "btn btn--danger";
       exit.textContent = "Poistu";
-      exit.onclick = () => {
-        if (confirm("Haluatko varmasti poistua tehtävästä?")) {
-          Engine.play("Kansi");
-        }
-      };
+      exit.onclick = () => exitStorySafe();
 
       nav.append(back, exit);
       document.body.appendChild(nav);
     }
+
+    /* KANSISIVULLA PIILOON */
+    if (tags.includes("cover")) {
+      body.classList.add("hide-navbar");
+    } else {
+      body.classList.remove("hide-navbar");
+    }
   });
 })();
+
+
 window.downloadAmmattitutkimus = function () {
 
   const v = State.variables;
 
-  const lines = [
-    "SOTE-ALAN AMMATTITEHTÄVÄ",
-    "==============================",
-    "",
-    "AMMATIN NIMI:",
-    (v.ammatti || ""),
-    "",
-    "MITÄ TYÖSSÄ TEHDÄÄN:",
-    (v.tyotehtavat || ""),
-    "",
-    "MISSÄ TYÖTÄ TEHDÄÄN:",
-    (v.tyopaikat || ""),
-    "",
-    "TYÖAJAT:",
-    (v.tyoajat || ""),
-    "",
-    "MISSÄ AMMATTIA VOI OPISKELLA:",
-    (v.opiskelupaikat || ""),
-    "",
-    "AMMATISSA TARVITTAVAT TAIDOT JA OMINAISUUDET:",
-    (v.vahvuudet || ""),
-    "",
-    "MIKSI AMMATTI SOPISI MINULLE:",
-    (v.omaPerustelu || ""),
-    "",
-    "------------------------------",
-    "Luotu SOTE-alan ammattitutkimustehtävästä."
-  ].join("\n");
+  const text =
+`ESITELMÄ AMMATISTA: ${v.ammatti || ""}
 
-  const blob = new Blob([lines], { type: "text/plain;charset=utf-8" });
+1. MITÄ TÄSSÄ TYÖSSÄ TEHDÄÄN:
+${v.tyotehtavat || ""}
+
+2. MISSÄ TÖITÄ TEHDÄÄN:
+${v.tyopaikat || ""}
+
+3. MILLAISTA TYÖAIKA ON:
+${v.tyoajat || ""}
+
+4. MISSÄ TÄTÄ AMMATTIA VOI OPISKELLA:
+${v.opiskelupaikat || ""}
+
+5. MIKSI TÄMÄ AMMATTI SOPII MINULLE:
+${v.omaPerustelu || ""}
+
+------------------------------
+Luotu SOTE-alan ammattitehtävästä.`;
+
+  const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
   const url = URL.createObjectURL(blob);
 
   const a = document.createElement("a");
   a.href = url;
-  a.download = "sote_ammattitutkimus.txt";
-
+  a.download = "sote_ammattiesitelma.txt";
   document.body.appendChild(a);
   a.click();
 
@@ -808,10 +836,63 @@ window.downloadAmmattitutkimus = function () {
   URL.revokeObjectURL(url);
 };
 
+/* AUTOMAATTINEN VÄLITALLENNUS ESITELMÄPOHJAAN */
+window.initAmmattiAutosave = function () {
 
+  const key = "ammattitutkimus_autosave";
 
+  const fields = document.querySelectorAll("#passages .lomake-ryhma textarea");
 
+  // Palauta tallennetut tekstit
+  const saved = JSON.parse(localStorage.getItem(key) || "[]");
+  fields.forEach((field, i) => {
+    if (saved[i]) field.value = saved[i];
+  });
 
+  // Tallenna kirjoitettaessa
+  fields.forEach((field, i) => {
+    field.addEventListener("input", () => {
+      const data = Array.from(fields).map(f => f.value);
+      localStorage.setItem(key, JSON.stringify(data));
+    });
+  });
+};
+
+window.tyhjennaEsitelma = function () {
+  // tyhjennä kaikki textarea-kentät sivulta
+  document.querySelectorAll('#passages textarea').forEach(t => t.value = "");
+
+  // tyhjennä SugarCube-muuttujat
+  State.variables.tyotehtavat = "";
+  State.variables.tyopaikat = "";
+  State.variables.tyoajat = "";
+  State.variables.opiskelupaikat = "";
+  State.variables.omaPerustelu = "";
+
+  // pakota autosave uudelleen
+  if (typeof saveAmmattiAutosave === "function") {
+    saveAmmattiAutosave();
+  }
+};
+
+window.resetAmmattiForm = function () {
+
+  const fields = [
+    "tyotehtavat",
+    "tyopaikat",
+    "tyoajat",
+    "opiskelupaikat",
+    "omaPerustelu"
+  ];
+
+  fields.forEach(f => {
+    State.variables[f] = "";
+    const el = document.getElementById(f);
+    if (el) el.value = "";
+  });
+
+  alert("Vastaukset on tyhjennetty.");
+};
 
 
 
@@ -839,6 +920,10 @@ window.flash = function(ok, next) {
   setTimeout(() => Engine.play(next), 900);
 };
 
+window.poistuAmmattitutkimuksesta = function () {
+  resetAmmattitutkimus();        // tyhjennä vastaukset
+  Engine.play("Kansi");         // palaa kansisivulle
+};
 </script><tw-passagedata pid="1" name="StoryInit" tags="" position="750,0" size="100,100">&lt;&lt;set $score = 0&gt;&gt;
 
 &lt;&lt;set $hideNavbar = true&gt;&gt;
@@ -888,12 +973,13 @@ Olet tutustunut terveys- ja hyvinvointialaan ja pysähtynyt pohtimaan omaa tulev
   &lt;/p&gt;
  
   &lt;div class=&quot;intro-nappi&quot;&gt;
-    [[Palaa tarinan alkuun-&gt;start]]
-    &lt;a href=&quot;javascript:void(0)&quot;
-       class=&quot;macro-link btn--danger&quot;
-       onclick=&quot;confirmExitStory()&quot;&gt;
-      Sulje
-    &lt;/a&gt;
+
+    &lt;a class=&quot;macro-link btn--danger&quot;
+   href=&quot;javascript:void(0)&quot;
+   onclick=&quot;resetAmmattitutkimus(); SugarCube.Engine.play(&#39;Kansi&#39;);&quot;&gt;
+   Poistu
+&lt;/a&gt;
+
   &lt;/div&gt;
 &lt;/div&gt;
 </tw-passagedata><tw-passagedata pid="4" name="start" tags="" position="600,100" size="100,100">&lt;&lt;script&gt;&gt;
@@ -1522,47 +1608,62 @@ Lopuksi saat vastauksistasi yhteenvedon.
 
 &lt;div class=&quot;intro-nappi&quot;&gt;
   [[Valitse ammatti →-&gt;Ammatinvalinta]]
-&lt;/div&gt;</tw-passagedata><tw-passagedata pid="28" name="Esitelmäpohja" tags="" position="850,600" size="100,100">&lt;h1&gt;Esitelmä ammatista: &lt;&lt;print $ammatti&gt;&gt;&lt;/h1&gt;
+&lt;/div&gt;</tw-passagedata><tw-passagedata pid="28" name="Esitelmäpohja" tags="" position="850,600" size="100,100">&lt;&lt;script&gt;&gt;
+setTimeout(initAmmattiAutosave, 100);
+&lt;&lt;/script&gt;&gt;
+&lt;&lt;script&gt;&gt;
+setTimeout(initAmmattiAutosave, 100);
+&lt;&lt;/script&gt;&gt;
+
+&lt;h2&gt;Esitelmä ammatista: &lt;&lt;print $ammatti&gt;&gt;&lt;/h2&gt;
 
 &lt;p&gt;
-Täytä alle tiedot valitsemastasi terveys- ja hyvinvointialan ammatista. 
-Voit käyttää apuna esimerkiksi Opintopolku.fi-sivustoa ja oppilaitosten omia sivuja.
+Täytä alle tiedot valitsemastasi terveys- ja hyvinvointialan ammatista.
+Vastaa kohtiin omin sanoin.
 &lt;/p&gt;
 
 &lt;div class=&quot;lomake-ryhma&quot;&gt;
 
-
 &lt;p&gt;&lt;strong&gt;1. Mitä tässä työssä tehdään?&lt;/strong&gt;&lt;/p&gt;
 &lt;&lt;textarea &quot;$tyotehtavat&quot; &quot;&quot; placeholder=&quot;Esim. potilaiden hoitaminen, ohjaaminen, mittaukset, tukeminen arjessa...&quot;&gt;&gt;
 
-&lt;p&gt;&lt;strong&gt;2. Missä työpaikoissa tätä työtä tehdään?&lt;/strong&gt;&lt;/p&gt;
-&lt;&lt;textarea &quot;$tyopaikat&quot; &quot;&quot; placeholder=&quot;Esim. sairaalat, terveyskeskukset, hoivakodit, asiakkaiden kodit, päiväkodit...&quot;&gt;&gt;
+&lt;p&gt;&lt;strong&gt;2. Missä töitä tehdään?&lt;/strong&gt;&lt;/p&gt;
+&lt;&lt;textarea &quot;$tyopaikat&quot; &quot;&quot; placeholder=&quot;Esim. sairaalat, terveyskeskukset, hoivakodit, asiakkaiden kodit...&quot;&gt;&gt;
 
-&lt;p&gt;&lt;strong&gt;3. Millaista työaika yleensä on?&lt;/strong&gt;&lt;/p&gt;
-&lt;&lt;textarea &quot;$tyoajat&quot; &quot;&quot; placeholder=&quot;Esim. päivä-, ilta- tai vuorotyö. Onko viikonlopputöitä?&quot;&gt;&gt;
+&lt;p&gt;&lt;strong&gt;3. Millaista työaika on?&lt;/strong&gt;&lt;/p&gt;
+&lt;&lt;textarea &quot;$tyoajat&quot; &quot;&quot; placeholder=&quot;Päivä-, ilta- tai vuorotyö. Onko viikonlopputöitä?&quot;&gt;&gt;
 
 &lt;p&gt;&lt;strong&gt;4. Missä tätä ammattia voi opiskella?&lt;/strong&gt;&lt;/p&gt;
-&lt;&lt;textarea &quot;$opiskelupaikat&quot; &quot;&quot; placeholder=&quot;Oppilaitokset ja paikkakunnat. Voit käyttää Opintopolku.fi:tä apuna.&quot;&gt;&gt;
+&lt;&lt;textarea &quot;$opiskelupaikat&quot; &quot;&quot; placeholder=&quot;Oppilaitokset ja paikkakunnat.&quot;&gt;&gt;
 
-&lt;p&gt;&lt;strong&gt;5. Mitä taitoja ja ominaisuuksia työssä tarvitaan?&lt;/strong&gt;&lt;/p&gt;
-&lt;&lt;textarea &quot;$vahvuudet&quot; &quot;&quot; placeholder=&quot;Esim. empatia, vastuullisuus, yhteistyötaidot, huolellisuus...&quot;&gt;&gt;
-
-&lt;p&gt;&lt;strong&gt;6. Miksi tämä ammatti voisi sopia sinulle?&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;5. Miksi tämä ammatti sopii sinulle?&lt;/strong&gt;&lt;/p&gt;
 &lt;&lt;textarea &quot;$omaPerustelu&quot; &quot;&quot; placeholder=&quot;Omat ajatuksesi ja tulevaisuuden haaveesi...&quot;&gt;&gt;
 
 &lt;/div&gt;
 
-&lt;div class=&quot;intro-nappi&quot;&gt;
+&lt;div class=&quot;intro-nappi action-row&quot;&gt;
 
-&lt;a href=&quot;javascript:void(0)&quot;
-   class=&quot;macro-link&quot;
+&lt;a class=&quot;macro-link btn-primary&quot;
+   href=&quot;javascript:void(0)&quot;
    onclick=&quot;downloadAmmattitutkimus()&quot;&gt;
-   Lataa vastaukset tiedostona
+   Lataa vastaukset
 &lt;/a&gt;
 
-[[Valmis-&gt;Loppusivu]]
+&lt;a class=&quot;macro-link btn-ghost&quot;
+   href=&quot;javascript:void(0)&quot;
+   onclick=&quot;tyhjennaEsitelma()&quot;&gt;
+   Tyhjennä lomake
+&lt;/a&gt;
+
+
+&lt;&lt;link &quot;Loppusanat&quot;&gt;&gt;
+  &lt;&lt;goto &quot;Loppusivu&quot;&gt;&gt;
+&lt;&lt;/link&gt;&gt;
 
 &lt;/div&gt;
+
+
+
 </tw-passagedata><tw-passagedata pid="29" name="1A" tags="" position="100,450" size="100,100">&lt;h2&gt;Hienoa!&lt;/h2&gt;
 
 &lt;p&gt;
