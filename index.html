@@ -448,27 +448,60 @@ body.hide-navbar .navbar-fixed {
 }
 
 /* ============================================================
-   8. KANSISIVU
+   KANSISIVU – JULISTEMAINEN, KOKO SIVU KLIKATTAVA
    ============================================================ */
 
-.cover-page {
-  width: 100vw;
-  height: 100vh;
+#passages .passage .cover-link {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
 
   display: flex;
   justify-content: center;
-  align-items: center;
+  align-items: flex-start;        /* EI keskelle alas */
+  padding-top: 14vh;              /* otsikko ylemmäs */
 
   background: var(--bg-body);
+  text-decoration: none !important;
   cursor: pointer;
 }
 
-.cover-title {
-  font-size: clamp(3rem, 8vw, 5.5rem);
-  font-weight: 800;
-  color: var(--accent-1);
+/* Sisäkehys */
+#passages .passage .cover-inner {
+  max-width: 900px;
+  width: 100%;
   text-align: center;
 }
+
+/* Pääotsikko */
+#passages .passage .cover-title {
+  font-family: "Segoe UI","Helvetica Neue",Arial,sans-serif;
+  font-weight: 900;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  line-height: 1.03;
+  font-size: clamp(2.1rem, 5vw, 3.4rem);
+;
+  color: var(--primary-3);
+
+  margin: 0;
+  text-shadow: 0 8px 22px rgba(0,0,0,0.18);
+}
+
+/* Alaotsikko */
+#passages .passage .cover-subtitle {
+  margin-top: 1.8rem;
+  font-size: clamp(1.2rem, 3vw, 1.8rem);
+  opacity: 0.85;
+}
+
+/* Klikkausohje */
+#passages .passage .cover-hint {
+  margin-top: 3rem;
+  font-size: 0.95rem;
+  opacity: 0.6;
+}
+
 a.macro-link.btn--danger {
   background: var(--danger-bg) !important;
   border-color: #4A1414 !important;
@@ -526,50 +559,19 @@ a.macro-link.btn--danger {
 
   box-sizing: border-box !important;
 }
-/* Ammattitutkimuksen lomakkeen kirjoitustekstin väri */
-#passages .lomake-ryhma tex/* KANSISIVU – julistemainen, varma yliajo */
-#passages .passage .cover-link {
-  display: flex !important;
-  min-height: 100vh !important;
-  width: 100% !important;
 
-  justify-content: center !important;
-  align-items: center !important;
-  text-align: center !important;
-
-  background: var(--bg-body) !important;
-  color: var(--text-main) !important;
-
-  text-decoration: none !important;
-  cursor: pointer !important;
-  box-sizing: border-box !important;
-  padding: 2.5rem 1.5rem !important;
-}
-
-#passages .passage .cover-inner {
-  max-width: 900px !important;
-}
-
-#passages .passage .cover-title {
-  font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif !important;
-  font-weight: 900 !important;
-  letter-spacing: 0.08em !important;
-  line-height: 0.95 !important;
-
-  font-size: 3rem !important;
-  color: var(--accent-1) !important;
+/* PAKOTA KANSISIVU YLÖS – POISTA SUGARCUBEN KESKITYS */
+#passages .passage.cover {
   margin: 0 !important;
+  padding: 0 !important;
 }
 
-#passages .passage .cover-subtitle {
-  font-size: clamp(1.1rem, 2.8vw, 1.6rem) !important;
-  margin-top: 1.6rem !important;
+#passages .passage.cover .cover-page {
+  margin: 0 !important;
+  padding-top: 10vh !important;   /* tätä säädät jos haluat vielä ylemmäs */
 }
 
-#passages .passage .cover-hint {
-  margin-top: 2.6rem !important;
-  opacity: 0.75 !important;
-}
+
 tarea,
 #passages .lomake-ryhma input[type="text"] {
   color: #000000 !important;
@@ -752,57 +754,16 @@ p, h1, h2, h3 { margin-top: .3rem; margin-bottom: .3rem; }
 .btn-primary:active {
   box-shadow: 0 2px 0 rgba(0,0,0,0.35) !important;
 }
-</style><script role="script" id="twine-user-script" type="text/twine-javascript">window.exitStorySafe = function () {
-  if (!confirm("Haluatko varmasti poistua tehtävästä?")) return;
-  if (window.resetAmmattitutkimus) resetAmmattitutkimus();
-  SugarCube.Engine.play("Kansi");
-};
-
-(function () {
+</style><script role="script" id="twine-user-script" type="text/twine-javascript">(function () {
   "use strict";
 
-  $(document).on(":passagestart", function (event) {
-    if (!event || !event.passage) return;
+  const AUTOSAVE_KEY = "sote_ammatti_autosave_v1";
 
-    const body = document.body;
-    const tags = event.passage.tags || [];
+  /* ========= LATAA TXT ========= */
+  window.downloadAmmattitutkimus = function () {
+    const v = State.variables;
 
-    /* RAKENNA NAVBAR KERRAN */
-    if (!document.querySelector(".navbar-fixed")) {
-      const nav = document.createElement("div");
-      nav.className = "navbar-fixed";
-
-      const back = document.createElement("button");
-      back.className = "btn";
-      back.textContent = "← Takaisin";
-      back.onclick = () => {
-        if (State && State.length > 0) SugarCube.Engine.backward();
-      };
-
-      const exit = document.createElement("button");
-      exit.className = "btn btn--danger";
-      exit.textContent = "Poistu";
-      exit.onclick = () => exitStorySafe();
-
-      nav.append(back, exit);
-      document.body.appendChild(nav);
-    }
-
-    /* KANSISIVULLA PIILOON */
-    if (tags.includes("cover")) {
-      body.classList.add("hide-navbar");
-    } else {
-      body.classList.remove("hide-navbar");
-    }
-  });
-})();
-
-
-window.downloadAmmattitutkimus = function () {
-
-  const v = State.variables;
-
-  const text =
+    const text =
 `ESITELMÄ AMMATISTA: ${v.ammatti || ""}
 
 1. MITÄ TÄSSÄ TYÖSSÄ TEHDÄÄN:
@@ -823,101 +784,102 @@ ${v.omaPerustelu || ""}
 ------------------------------
 Luotu SOTE-alan ammattitehtävästä.`;
 
-  const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
-  const url = URL.createObjectURL(blob);
+    const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "sote_ammattiesitelma.txt";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
 
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "sote_ammattiesitelma.txt";
-  document.body.appendChild(a);
-  a.click();
+  /* ========= AUTOSAVE ========= */
+  window.initAmmattiAutosave = function () {
+    const fields = document.querySelectorAll("#passages .lomake-ryhma textarea");
+    if (!fields.length) return;
 
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-};
+    let saved = [];
+    try { saved = JSON.parse(localStorage.getItem(AUTOSAVE_KEY) || "[]"); } catch(e){}
 
-/* AUTOMAATTINEN VÄLITALLENNUS ESITELMÄPOHJAAN */
-window.initAmmattiAutosave = function () {
+    fields.forEach((f,i) => f.value = saved[i] || "");
 
-  const key = "ammattitutkimus_autosave";
-
-  const fields = document.querySelectorAll("#passages .lomake-ryhma textarea");
-
-  // Palauta tallennetut tekstit
-  const saved = JSON.parse(localStorage.getItem(key) || "[]");
-  fields.forEach((field, i) => {
-    if (saved[i]) field.value = saved[i];
-  });
-
-  // Tallenna kirjoitettaessa
-  fields.forEach((field, i) => {
-    field.addEventListener("input", () => {
-      const data = Array.from(fields).map(f => f.value);
-      localStorage.setItem(key, JSON.stringify(data));
+    fields.forEach((field,i)=>{
+      field.addEventListener("input", ()=>{
+        const data = Array.from(fields).map(f=>f.value);
+        localStorage.setItem(AUTOSAVE_KEY, JSON.stringify(data));
+        ["tyotehtavat","tyopaikat","tyoajat","opiskelupaikat","omaPerustelu"]
+          .forEach((k,j)=> State.variables[k] = data[j] || "");
+      });
     });
+  };
+
+  /* ========= TYHJENNÄ ========= */
+  window.tyhjennaEsitelma = function () {
+    document.querySelectorAll("#passages textarea").forEach(t=>t.value="");
+    ["tyotehtavat","tyopaikat","tyoajat","opiskelupaikat","omaPerustelu","ammatti"]
+      .forEach(k=>State.variables[k]="");
+    localStorage.removeItem(AUTOSAVE_KEY);
+    alert("Vastaukset tyhjennetty.");
+  };
+
+  /* ========= POISTU ========= */
+  window.exitStorySafe = function () {
+    if (!confirm("Haluatko varmasti poistua tehtävästä?")) return;
+    Engine.play("Kansi");
+  };
+
+  /* ========= NAVBAR ========= */
+  $(document).on(":passagestart", function (event) {
+    if (!event || !event.passage) return;
+    const tags = event.passage.tags || [];
+
+    if (tags.includes("cover")) document.body.classList.add("hide-navbar");
+    else document.body.classList.remove("hide-navbar");
+
+    if (!document.querySelector(".navbar-fixed")) {
+      const nav = document.createElement("div");
+      nav.className = "navbar-fixed";
+
+      const back = document.createElement("button");
+      back.className = "btn";
+      back.textContent = "← Takaisin";
+      back.onclick = ()=>Engine.backward();
+
+      const exit = document.createElement("button");
+      exit.className = "btn btn--danger";
+      exit.textContent = "Poistu";
+      exit.onclick = ()=>window.exitStorySafe();
+
+      nav.append(back, exit);
+      document.body.appendChild(nav);
+    }
+
+    if (event.passage.name === "Esitelmäpohja") {
+      setTimeout(()=>window.initAmmattiAutosave(),50);
+    }
   });
-};
-
-window.tyhjennaEsitelma = function () {
-  // tyhjennä kaikki textarea-kentät sivulta
-  document.querySelectorAll('#passages textarea').forEach(t => t.value = "");
-
-  // tyhjennä SugarCube-muuttujat
-  State.variables.tyotehtavat = "";
-  State.variables.tyopaikat = "";
-  State.variables.tyoajat = "";
-  State.variables.opiskelupaikat = "";
-  State.variables.omaPerustelu = "";
-
-  // pakota autosave uudelleen
-  if (typeof saveAmmattiAutosave === "function") {
-    saveAmmattiAutosave();
-  }
-};
-
-window.resetAmmattiForm = function () {
-
-  const fields = [
-    "tyotehtavat",
-    "tyopaikat",
-    "tyoajat",
-    "opiskelupaikat",
-    "omaPerustelu"
-  ];
-
-  fields.forEach(f => {
-    State.variables[f] = "";
-    const el = document.getElementById(f);
-    if (el) el.value = "";
-  });
-
-  alert("Vastaukset on tyhjennetty.");
-};
-
-
-
-$(document).on(':passagestart', function () {
-  $('.quiz-popup').remove();
-});
-
-window.flash = function(ok, next) {
+  /* ========= TIETOKILPAILUN OIKEIN / VÄÄRIN -POPUP ========= */
+window.flash = function (ok, next) {
   const el = document.createElement("div");
   el.className = "quiz-popup " + (ok ? "correct" : "wrong");
   el.textContent = ok ? "OIKEIN" : "VÄÄRIN";
   document.body.appendChild(el);
-  setTimeout(() => Engine.play(next), 900);
+
+  setTimeout(function () {
+    Engine.play(next);
+  }, 900);
 };
 
-window.poistuAmmattitutkimuksesta = function () {
-  resetAmmattitutkimus();        // tyhjennä vastaukset
-  Engine.play("Kansi");         // palaa kansisivulle
-};
-window.exitStorySafe = function () {
-  if (!confirm("Haluatko varmasti poistua tehtävästä?")) return;
-  if (window.resetAmmattitutkimus) resetAmmattitutkimus();
-  SugarCube.Engine.play("Kansi");
-};
-</script><tw-passagedata pid="1" name="StoryInit" tags="" position="750,0" size="100,100">&lt;&lt;set $score = 0&gt;&gt;
+/* Poista popup aina kun uusi passage alkaa */
+$(document).on(':passagestart', function () {
+  $('.quiz-popup').remove();
+});
+
+
+})();
+</script><tw-tag name="cover" color="blue"></tw-tag><tw-passagedata pid="1" name="StoryInit" tags="" position="750,0" size="100,100">&lt;&lt;set $score = 0&gt;&gt;
 
 &lt;&lt;set $hideNavbar = true&gt;&gt;
 &lt;&lt;set $hideNavbar = false&gt;&gt;
@@ -1015,7 +977,7 @@ Tässä testissä vastaat kysymyksiin, jotka liittyvät SOTE-alaan  ja siellä t
     &lt;&lt;run Engine.forward()&gt;&gt;
   &lt;&lt;/button&gt;&gt;
 &lt;/div&gt;
-</tw-passagedata><tw-passagedata pid="7" name="Kansi" tags="" position="475,75" size="100,100">&lt;&lt;script&gt;&gt;
+</tw-passagedata><tw-passagedata pid="7" name="Kansi" tags="cover" position="475,75" size="100,100">&lt;&lt;script&gt;&gt;
 $(&#39;body&#39;).removeClass(&#39;hide-navbar&#39;);
 &lt;&lt;/script&gt;&gt;
 
@@ -1602,13 +1564,7 @@ Lopuksi saat vastauksistasi yhteenvedon.
 
 &lt;div class=&quot;intro-nappi&quot;&gt;
   [[Valitse ammatti →-&gt;Ammatinvalinta]]
-&lt;/div&gt;</tw-passagedata><tw-passagedata pid="28" name="Esitelmäpohja" tags="" position="850,600" size="100,100">&lt;&lt;script&gt;&gt;
-setTimeout(initAmmattiAutosave, 100);
-&lt;&lt;/script&gt;&gt;
-&lt;&lt;script&gt;&gt;
-setTimeout(initAmmattiAutosave, 100);
-&lt;&lt;/script&gt;&gt;
-
+&lt;/div&gt;</tw-passagedata><tw-passagedata pid="28" name="Esitelmäpohja" tags="" position="850,600" size="100,100">
 &lt;h2&gt;Esitelmä ammatista: &lt;&lt;print $ammatti&gt;&gt;&lt;/h2&gt;
 
 &lt;p&gt;
@@ -1636,19 +1592,14 @@ Vastaa kohtiin omin sanoin.
 &lt;/div&gt;
 
 &lt;div class=&quot;intro-nappi action-row&quot;&gt;
-
 &lt;a class=&quot;macro-link btn-primary&quot;
    href=&quot;javascript:void(0)&quot;
    onclick=&quot;downloadAmmattitutkimus()&quot;&gt;
    Lataa vastaukset
 &lt;/a&gt;
-
-&lt;a class=&quot;macro-link btn-ghost&quot;
-   href=&quot;javascript:void(0)&quot;
-   onclick=&quot;tyhjennaEsitelma()&quot;&gt;
-   Tyhjennä lomake
+&lt;a class=&quot;macro-link btn-secondary&quot; href=&quot;javascript:void(0)&quot; onclick=&quot;tyhjennaEsitelma()&quot;&gt;
+  Tyhjennä
 &lt;/a&gt;
-
 
 &lt;&lt;link &quot;Loppusanat&quot;&gt;&gt;
   &lt;&lt;goto &quot;Loppusivu&quot;&gt;&gt;
@@ -1831,8 +1782,7 @@ SOTE-alalla työskennellään harvoin yksin. Yhteistyö on tärkeä osa arkea.
 </tw-passagedata><tw-passagedata pid="44" name="6A" tags="" position="75,1075" size="100,100">&lt;h1&gt;Loistavaa!&lt;/h1&gt;
 
 &lt;p&gt;
-Eettisyys ja salassapito ovat SOTE-alan perusta. Tämä kertoo vahvasta
-vastuuntunnosta ja luotettavuudesta.
+Eettisyys ja salassapito ovat SOTE-alan perusta. Tämä kertoo vahvasta vastuuntunnosta ja luotettavuudesta.
 &lt;/p&gt;
 
 &lt;div class=&quot;intro-nappi&quot;&gt;
@@ -1843,8 +1793,7 @@ vastuuntunnosta ja luotettavuudesta.
 </tw-passagedata><tw-passagedata pid="45" name="6B" tags="" position="175,1075" size="100,100">&lt;h1&gt;Hyvä!&lt;/h1&gt;
 
 &lt;p&gt;
-Eettisten periaatteiden merkitys kasvaa nopeasti koulutuksen ja
-työkokemuksen myötä.
+Eettisten periaatteiden merkitys kasvaa nopeasti koulutuksen ja työkokemuksen myötä.
 &lt;/p&gt;
 
 &lt;div class=&quot;intro-nappi&quot;&gt;
@@ -1855,8 +1804,7 @@ työkokemuksen myötä.
 </tw-passagedata><tw-passagedata pid="46" name="6C" tags="" position="275,1075" size="100,100">&lt;h1&gt;Kannattaa pohtia tätä&lt;/h1&gt;
 
 &lt;p&gt;
-SOTE-alalla luottamus, salassapito ja eettinen toiminta ovat
-välttämättömiä kaikissa työtehtävissä.
+SOTE-alalla luottamus, salassapito ja eettinen toiminta ovat välttämättömiä kaikissa työtehtävissä.
 &lt;/p&gt;
 
 &lt;div class=&quot;intro-nappi&quot;&gt;
