@@ -829,7 +829,7 @@ Luotu SOTE-alan ammattitehtävästä.`;
       const exit = document.createElement("button");
       exit.className = "btn btn--danger";
       exit.textContent = "Poistu";
-      exit.onclick = ()=>exitStorySafe();
+      exit.onclick = () => SugarCube.Engine.play("Kansi");
 
       nav.append(back, exit);
       document.body.appendChild(nav);
