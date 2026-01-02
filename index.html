@@ -447,60 +447,55 @@ body.hide-navbar .navbar-fixed {
   box-shadow: 0 12px 30px rgba(0,0,0,0.7);
 }
 
-/* ============================================================
-   KANSISIVU – JULISTEMAINEN, KOKO SIVU KLIKATTAVA
-   ============================================================ */
-
-#passages .passage .cover-link {
+/* KANSISIVU – KOKO RUUTU KLIKATTAVA */
+#soteCover.sote-cover {
   position: fixed;
   inset: 0;
-  z-index: 9999;
+  z-index: 99999;
+  cursor: pointer;
+  pointer-events: auto;
 
   display: flex;
   justify-content: center;
-  align-items: flex-start;        /* EI keskelle alas */
-  padding-top: 14vh;              /* otsikko ylemmäs */
-
-  background: var(--bg-body);
-  text-decoration: none !important;
-  cursor: pointer;
-}
-
-/* Sisäkehys */
-#passages .passage .cover-inner {
-  max-width: 900px;
-  width: 100%;
+  align-items: center;
   text-align: center;
+
+  background:
+    linear-gradient(rgba(232,243,244,.92), rgba(232,243,244,.92)),
+    url("https://images.unsplash.com/photo-1580281657527-47f249e8f67b?auto=format&fit=crop&w=2400&q=80");
+  background-size: cover;
+  background-position: center;
 }
 
-/* Pääotsikko */
-#passages .passage .cover-title {
-  font-family: "Segoe UI","Helvetica Neue",Arial,sans-serif;
-  font-weight: 900;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  line-height: 1.03;
-  font-size: clamp(2.1rem, 5vw, 3.4rem);
-;
-  color: var(--primary-3);
+/* Sisältö */
+#soteCover .cover-inner {
+  max-width: 900px;
+  padding: 2rem;
+}
 
+#soteCover .cover-title {
+  font-size: clamp(2.6rem, 6vw, 4.2rem);
+  font-weight: 900;
+  letter-spacing: .14em;
+  text-transform: uppercase;
   margin: 0;
+  color: #1f5f65;
   text-shadow: 0 8px 22px rgba(0,0,0,0.18);
 }
 
-/* Alaotsikko */
-#passages .passage .cover-subtitle {
-  margin-top: 1.8rem;
-  font-size: clamp(1.2rem, 3vw, 1.8rem);
-  opacity: 0.85;
+#soteCover .cover-subtitle {
+  margin-top: 1.2rem;
+  font-size: 1.4rem;
+  opacity: .85;
 }
 
-/* Klikkausohje */
-#passages .passage .cover-hint {
-  margin-top: 3rem;
-  font-size: 0.95rem;
-  opacity: 0.6;
+#soteCover .cover-hint {
+  margin-top: 2.2rem;
+  font-size: 1rem;
+  opacity: .6;
 }
+
+
 
 a.macro-link.btn--danger {
   background: var(--danger-bg) !important;
@@ -558,17 +553,6 @@ a.macro-link.btn--danger {
   background: #ffffff !important;
 
   box-sizing: border-box !important;
-}
-
-/* PAKOTA KANSISIVU YLÖS – POISTA SUGARCUBEN KESKITYS */
-#passages .passage.cover {
-  margin: 0 !important;
-  padding: 0 !important;
-}
-
-#passages .passage.cover .cover-page {
-  margin: 0 !important;
-  padding-top: 10vh !important;   /* tätä säädät jos haluat vielä ylemmäs */
 }
 
 
@@ -759,7 +743,7 @@ p, h1, h2, h3 { margin-top: .3rem; margin-bottom: .3rem; }
 
   const AUTOSAVE_KEY = "sote_ammatti_autosave_v1";
 
-  /* ========= LATAA TXT ========= */
+  /* ================= TXT ================= */
   window.downloadAmmattitutkimus = function () {
     const v = State.variables;
 
@@ -781,41 +765,34 @@ ${v.opiskelupaikat || ""}
 5. MIKSI TÄMÄ AMMATTI SOPII MINULLE:
 ${v.omaPerustelu || ""}
 
-------------------------------
 Luotu SOTE-alan ammattitehtävästä.`;
 
     const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
-    a.href = url;
+    a.href = URL.createObjectURL(blob);
     a.download = "sote_ammattiesitelma.txt";
-    document.body.appendChild(a);
     a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
   };
 
-  /* ========= AUTOSAVE ========= */
+  /* ================= AUTOSAVE ================= */
   window.initAmmattiAutosave = function () {
     const fields = document.querySelectorAll("#passages .lomake-ryhma textarea");
     if (!fields.length) return;
 
-    let saved = [];
-    try { saved = JSON.parse(localStorage.getItem(AUTOSAVE_KEY) || "[]"); } catch(e){}
+    const saved = JSON.parse(localStorage.getItem(AUTOSAVE_KEY) || "[]");
+    fields.forEach((f,i)=> f.value = saved[i] || "");
 
-    fields.forEach((f,i) => f.value = saved[i] || "");
-
-    fields.forEach((field,i)=>{
+    fields.forEach((field)=>{
       field.addEventListener("input", ()=>{
         const data = Array.from(fields).map(f=>f.value);
         localStorage.setItem(AUTOSAVE_KEY, JSON.stringify(data));
         ["tyotehtavat","tyopaikat","tyoajat","opiskelupaikat","omaPerustelu"]
-          .forEach((k,j)=> State.variables[k] = data[j] || "");
+          .forEach((k,i)=> State.variables[k] = data[i] || "");
       });
     });
   };
 
-  /* ========= TYHJENNÄ ========= */
+  /* ================= TYHJENNÄ ================= */
   window.tyhjennaEsitelma = function () {
     document.querySelectorAll("#passages textarea").forEach(t=>t.value="");
     ["tyotehtavat","tyopaikat","tyoajat","opiskelupaikat","omaPerustelu","ammatti"]
@@ -824,19 +801,21 @@ Luotu SOTE-alan ammattitehtävästä.`;
     alert("Vastaukset tyhjennetty.");
   };
 
-  /* ========= POISTU ========= */
+  /* ================= POISTU ================= */
   window.exitStorySafe = function () {
     if (!confirm("Haluatko varmasti poistua tehtävästä?")) return;
     Engine.play("Kansi");
   };
 
-  /* ========= NAVBAR ========= */
-  $(document).on(":passagestart", function (event) {
-    if (!event || !event.passage) return;
-    const tags = event.passage.tags || [];
+  /* ================= NAVBAR ================= */
+  $(document).on(":passagestart", function (ev) {
+    if (!ev || !ev.passage) return;
 
-    if (tags.includes("cover")) document.body.classList.add("hide-navbar");
-    else document.body.classList.remove("hide-navbar");
+    const tags = ev.passage.tags || [];
+    const body = document.body;
+
+    if (tags.includes("cover")) body.classList.add("hide-navbar");
+    else body.classList.remove("hide-navbar");
 
     if (!document.querySelector(".navbar-fixed")) {
       const nav = document.createElement("div");
@@ -845,45 +824,35 @@ Luotu SOTE-alan ammattitehtävästä.`;
       const back = document.createElement("button");
       back.className = "btn";
       back.textContent = "← Takaisin";
-      back.onclick = ()=>Engine.backward();
+      back.onclick = ()=>{ if(State.length>0) Engine.backward(); };
 
-     const exit = document.createElement("button");
+      const exit = document.createElement("button");
       exit.className = "btn btn--danger";
       exit.textContent = "Poistu";
-      exit.onclick = () => Engine.play("Kansi");
+      exit.onclick = ()=>exitStorySafe();
 
       nav.append(back, exit);
       document.body.appendChild(nav);
     }
 
-    if (event.passage.name === "Esitelmäpohja") {
-      setTimeout(()=>window.initAmmattiAutosave(),50);
+    if (ev.passage.name === "Esitelmäpohja") {
+      setTimeout(initAmmattiAutosave,50);
     }
   });
-  /* ========= TIETOKILPAILUN OIKEIN / VÄÄRIN -POPUP ========= */
-window.flash = function (ok, next) {
-  const el = document.createElement("div");
-  el.className = "quiz-popup " + (ok ? "correct" : "wrong");
-  el.textContent = ok ? "OIKEIN" : "VÄÄRIN";
-  document.body.appendChild(el);
 
-  setTimeout(function () {
-    Engine.play(next);
-  }, 900);
-};
+  /* ================= TIETOKILPAILU ================= */
+  window.flash = function(ok,next){
+    const el=document.createElement("div");
+    el.className="quiz-popup "+(ok?"correct":"wrong");
+    el.textContent=ok?"OIKEIN":"VÄÄRIN";
+    document.body.appendChild(el);
+    setTimeout(()=>Engine.play(next),900);
+  };
 
-/* Poista popup aina kun uusi passage alkaa */
-$(document).on(':passagestart', function () {
-  $('.quiz-popup').remove();
-});
-
-window.exitStorySafe = function () {
-  if (!confirm("Haluatko varmasti poistua tehtävästä?")) return;
-  Engine.play("Kansi");
-};
+  $(document).on(":passagestart",()=>$(".quiz-popup").remove());
 
 })();
-</script><tw-tag name="cover" color="blue"></tw-tag><tw-passagedata pid="1" name="StoryInit" tags="" position="750,0" size="100,100">&lt;&lt;set $score = 0&gt;&gt;
+</script><tw-tag name="cover" color="blue"></tw-tag><tw-tag name="Cover" color="green"></tw-tag><tw-passagedata pid="1" name="StoryInit" tags="" position="750,0" size="100,100">&lt;&lt;set $score = 0&gt;&gt;
 
 &lt;&lt;set $hideNavbar = true&gt;&gt;
 &lt;&lt;set $hideNavbar = false&gt;&gt;
@@ -979,22 +948,28 @@ Tässä testissä vastaat kysymyksiin, jotka liittyvät SOTE-alaan  ja siellä t
     &lt;&lt;run Engine.forward()&gt;&gt;
   &lt;&lt;/button&gt;&gt;
 &lt;/div&gt;
-</tw-passagedata><tw-passagedata pid="7" name="Kansi" tags="cover" position="475,75" size="100,100">&lt;&lt;script&gt;&gt;
+</tw-passagedata><tw-passagedata pid="7" name="Kansi" tags="" position="475,75" size="100,100">&lt;&lt;script&gt;&gt;
 $(&#39;body&#39;).removeClass(&#39;hide-navbar&#39;);
 &lt;&lt;/script&gt;&gt;
 
+&lt;div id=&quot;soteCover&quot; class=&quot;sote-cover&quot; role=&quot;button&quot; tabindex=&quot;0&quot;&gt;
+  &lt;div class=&quot;cover-inner&quot;&gt;
+    &lt;h1 class=&quot;cover-title&quot;&gt;TERVEYS- JA HYVINVOINTIALA&lt;/h1&gt;
+    
+  &lt;/div&gt;
+&lt;/div&gt;
+
 &lt;&lt;script&gt;&gt;
-$(&#39;body&#39;).addClass(&#39;hide-navbar&#39;);
+/* Vaihda tähän oikea aloituspassagen nimi */
+const NEXT_PASSAGE = &quot;Johdanto&quot;;  // tai &quot;start&quot;
+
+$(document).one(&quot;click keypress&quot;, &quot;#soteCover&quot;, function (ev) {
+  // myös Enter / Space toimii
+  if (ev.type === &quot;keypress&quot; &amp;&amp; ev.key !== &quot;Enter&quot; &amp;&amp; ev.key !== &quot; &quot;) return;
+  Engine.play(&quot;start&quot;);
+});
 &lt;&lt;/script&gt;&gt;
 
-&lt;a class=&quot;cover-link&quot; href=&quot;javascript:void(0)&quot; onclick=&quot;SugarCube.Engine.play(&#39;start&#39;)&quot;&gt;
-  &lt;div class=&quot;cover-inner&quot;&gt;
-    &lt;div class=&quot;cover-title&quot;&gt;
-  TERVEYS- JA HYVINVOINTIALA
-    &lt;/div&gt;
-
-      &lt;/div&gt;
-&lt;/a&gt;
 </tw-passagedata><tw-passagedata pid="8" name="K2" tags="" position="400,575" size="100,100">&lt;h1&gt;Kysymys 2 / 10&lt;/h1&gt;
 &lt;p&gt;
 Kuinka hyvin pystyt asettumaan toisen ihmisen asemaan ja ymmärtämään hänen tunteitaan?
@@ -1238,15 +1213,15 @@ Kannattaa silti tutustua alaan ja pohtia muita vaihtoehtoja.&lt;/p&gt;
   &lt;/p&gt;
 
   &lt;div class=&quot;answer-group&quot;&gt;
-    [[Uusimaa-&gt;Koulutukset: Elintarvikeala (Uusimaa)]]
-    [[Muu Suomi-&gt;Koulutukset: Elintarvikeala (Muu Suomi)]]
+    [[Uusimaa-&gt;Koulutukset: SOTE (Uusimaa)]]
+    [[Muu Suomi-&gt;Koulutukset: SOTE (Muu Suomi)]]
   &lt;/div&gt;
 
   &lt;div class=&quot;intro-nappi&quot;&gt;
     [[Palaa ammatinvalintaan-&gt;Ammatinvalinta]]
   &lt;/div&gt;
 &lt;/div&gt;
-</tw-passagedata><tw-passagedata pid="19" name="Koulutukset: Elintarvikeala (Uusimaa)" tags="" position="825,250" size="100,100">&lt;div class=&quot;quiz-page&quot;&gt;
+</tw-passagedata><tw-passagedata pid="19" name="Koulutukset: SOTE (Uusimaa)" tags="" position="825,250" size="100,100">&lt;div class=&quot;quiz-page&quot;&gt;
   &lt;h1&gt;SOTE-alan koulutusta tarjoavia oppilaitoksia Uudellamaalla&lt;/h1&gt;
   &lt;hr&gt;
 
@@ -1385,7 +1360,7 @@ Stadin AO:ssa voit opiskella sosiaali- ja terveysalan perustutkintoa ja valmistu
   &lt;/div&gt;
 &lt;/div&gt;
 &lt;/div&gt;
-</tw-passagedata><tw-passagedata pid="20" name="Koulutukset: Elintarvikeala (Muu Suomi)" tags="" position="950,250" size="100,100">&lt;div class=&quot;quiz-page&quot;&gt;
+</tw-passagedata><tw-passagedata pid="20" name="Koulutukset: SOTE (Muu Suomi)" tags="" position="950,250" size="100,100">&lt;div class=&quot;quiz-page&quot;&gt;
   &lt;h1&gt;SOTE-alan koulutuksia muualla Suomessa&lt;/h1&gt;
   &lt;hr&gt;
 
