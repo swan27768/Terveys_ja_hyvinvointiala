@@ -738,6 +738,54 @@ p, h1, h2, h3 { margin-top: .3rem; margin-bottom: .3rem; }
 .btn-primary:active {
   box-shadow: 0 2px 0 rgba(0,0,0,0.35) !important;
 }
+/* ============================================================
+   SAAVUTETTAVUUS – SUUREMMAT & SELKEÄMMÄT TEKSTIT
+   ============================================================ */
+
+/* Koko tarinan perusfontti */
+#passages .passage {
+  font-size: 18px !important;         /* ennen ~16px */
+  line-height: 1.8 !important;
+}
+
+/* Leipätekstit */
+#passages .passage p,
+#passages .passage li,
+#passages .passage textarea,
+#passages .passage input,
+#passages .passage label {
+  font-size: 1.05rem !important;
+  line-height: 1.8 !important;
+}
+
+/* Pääotsikot */
+#passages .passage h1 {
+  font-size: clamp(2.1rem, 4.5vw, 2.6rem) !important;
+}
+
+/* Alaotsikot */
+#passages .passage h2 {
+  font-size: clamp(1.6rem, 3vw, 2rem) !important;
+}
+
+#passages .passage h3 {
+  font-size: 1.35rem !important;
+}
+
+/* Napit */
+.intro-nappi a,
+.answer-group a,
+.navbar-fixed button {
+  font-size: 1.05rem !important;
+  min-height: 48px;                 /* kosketusalue */
+}
+
+/* Lomaketekstit */
+#passages textarea,
+#passages input[type="text"] {
+  font-size: 1.05rem !important;
+  line-height: 1.7 !important;
+}
 </style><script role="script" id="twine-user-script" type="text/twine-javascript">(function () {
   "use strict";
 
